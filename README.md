@@ -12,6 +12,22 @@ prototype `:max_restarts` is set to 10.
 $ git clone ...
 $ cd pipeline
 $ mix do deps.get, compile
+```
+
+### In action
+
+You can see the 5 `HTTP.Requestor` `producer_consumer`s subscribe to the `producer`
+on startup, followed by the `DB.Loader` `consumer`s.
+
+Each `HTTP.Requestor` takes 10 events, so 5 are processing concurrently. You can
+see below that after the 67th event is processed, the `HTTPRequestor5` crashes,
+and appears to take down the three `DB.Loader` consumers with it.
+
+However, you can see in the console that `HTTPRequestor5` resubscribes to the
+producer immediately followed by the three `DB.Loader` consumers subscribing to
+it. They begin processing events soon after.
+
+```
 $iex -S mix
 Erlang/OTP 19 [erts-8.2] [source] [64-bit] [smp:4:4] [async-threads:10] [hipe] [kernel-poll:false] [dtrace]
 
