@@ -19,7 +19,7 @@ defmodule Pipeline.HTTPRequestor do
       for event <- events do
         # Make an HTTP request to external service. Wait for response.
         :ok = :timer.sleep(1_000)
-        # if event in [15, 47], do: raise("#{state} just Crashed")
+        if event in [15, 47], do: raise("#{name} just Crashed")
         IO.puts(yellow() <> "Processed by #{name}: #{event}")
         "Processed by #{name}: #{event}"
       end
