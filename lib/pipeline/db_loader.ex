@@ -4,17 +4,19 @@ defmodule Pipeline.DBLoader do
   import IO.ANSI
 
   def start_link({id, subs}) do
-    name = :"#{__MODULE__}#{id}"
-    GenStage.start_link(__MODULE__, {subs, name}, name: name)
+    {:ok, pid} = GenStage.start_link(__MODULE__, {id, subs})
+    {:ok, _} = Registry.register(Registry.Pipeline, {DBLoader, id}, pid)
   end
 
-  def init({subs, name}) do
-    IO.puts(green() <> "#{name} subscribed!")
+  def init({id, subs}) do
+    IO.puts(green() <> "{DBLoader, #{id}} subscribed!")
     producers =
-      for id <- 1..subs do
-        {:"Elixir.Pipeline.HTTPRequestor#{id}", max_demand: 3}
+      for sub <- 1..subs do
+        [{_, pid}] = Registry.lookup(Registry.Pipeline, {HTTPRequestor, sub})
+        IO.inspect pid
+        pid
       end
-    {:consumer, name, subscribe_to: producers}
+    {:consumer, "DBLoader, #{id}", subscribe_to: producers}
   end
 
   def handle_events(events, _from, state) do

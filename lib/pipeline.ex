@@ -9,20 +9,22 @@ defmodule Pipeline do
 
     children = [
       worker(Pipeline.Source, [100]), # Records in an in-memory queue.
-      worker(Pipeline.Producer, [])
+      worker(Pipeline.Producer, []),
+      supervisor(Registry, [:unique, Registry.Pipeline])
     ]
 
     http_requestors =
       for id <- 1..@http_requestors do
-        worker(Pipeline.HTTPRequestor, [id], id: id)
+        worker(Pipeline.HTTPRequestor, [id], id: {HTTPRequestor, id})
       end
 
     db_loaders =
       for id <- 1..@db_loaders do
-        worker(Pipeline.DBLoader, [{id, @http_requestors}], id: id + @http_requestors)
+        worker(Pipeline.DBLoader, [{id, @http_requestors}], id: {DBLoader, id})
       end
 
     opts = [strategy: :one_for_one, name: Pipeline.Supervisor, max_restarts: 10]
     Supervisor.start_link(children ++ http_requestors ++ db_loaders, opts)
+    IO.inspect Supervisor.which_children(Pipeline.Supervisor)
   end
 end
