@@ -14,12 +14,12 @@ defmodule Pipeline do
 
     http_requestors =
       for id <- 1..@http_requestors do
-        worker(Pipeline.HTTPRequestor, [id], id: id)
+        worker(Pipeline.HTTPRequestor, [id], id: {HTTPRequestor, id})
       end
 
     db_loaders =
       for id <- 1..@db_loaders do
-        worker(Pipeline.DBLoader, [{id, @http_requestors}], id: id + @http_requestors)
+        worker(Pipeline.DBLoader, [{id, @http_requestors}], id: {DBLoader, id})
       end
 
     opts = [strategy: :one_for_one, name: Pipeline.Supervisor, max_restarts: 10]
