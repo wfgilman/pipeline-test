@@ -14,7 +14,7 @@ defmodule Pipeline.DBLoader do
     producers =
       for sub <- 1..subs do
         [{_, pid}] = Registry.lookup(Registry.Pipeline, {HTTPRequestor, sub})
-        pid
+        {pid, max_demand: 3}
       end
     {:consumer, "{DBLoader, #{id}}", subscribe_to: producers}
   end
