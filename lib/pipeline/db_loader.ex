@@ -4,17 +4,16 @@ defmodule Pipeline.DBLoader do
   import IO.ANSI
 
   def start_link({id, subs}) do
-    {:ok, pid} = GenStage.start_link(__MODULE__, {id, subs})
-    {:ok, _} = Registry.register(Registry.Pipeline, {DBLoader, id}, pid)
-    {:ok, pid}
+    name = {:via, Registry, {Pipeline.Registry, {DBLoader, id}}}
+    GenStage.start_link(__MODULE__, {id, subs}, name: name)
   end
 
   def init({id, subs}) do
     IO.puts(green() <> "{DBLoader, #{id}} subscribed!")
     producers =
       for sub <- 1..subs do
-        [{_, pid}] = Registry.lookup(Registry.Pipeline, {HTTPRequestor, sub})
-        {pid, max_demand: 3}
+        name = {:via, Registry, {Pipeline.Registry, {HTTPRequestor, sub}}}
+        {name, max_demand: 3}
       end
     {:consumer, "{DBLoader, #{id}}", subscribe_to: producers}
   end

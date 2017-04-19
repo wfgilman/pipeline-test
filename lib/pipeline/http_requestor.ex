@@ -4,9 +4,8 @@ defmodule Pipeline.HTTPRequestor do
   import IO.ANSI
 
   def start_link(id) do
-    {:ok, pid} = GenStage.start_link(__MODULE__, id)
-    {:ok, _} = Registry.register(Registry.Pipeline, {HTTPRequestor, id}, pid)
-    {:ok, pid}
+    name = {:via, Registry, {Pipeline.Registry, {HTTPRequestor, id}}}
+    GenStage.start_link(__MODULE__, id, name: name)
   end
 
   def init(id) do

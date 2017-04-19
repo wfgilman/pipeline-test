@@ -10,7 +10,7 @@ defmodule Pipeline do
     children = [
       worker(Pipeline.Source, [100]), # Records in an in-memory queue.
       worker(Pipeline.Producer, []),
-      supervisor(Registry, [:unique, Registry.Pipeline])
+      supervisor(Registry, [:unique, Pipeline.Registry])
     ]
 
     http_requestors =
