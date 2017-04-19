@@ -25,6 +25,5 @@ defmodule Pipeline do
 
     opts = [strategy: :one_for_one, name: Pipeline.Supervisor, max_restarts: 10]
     Supervisor.start_link(children ++ http_requestors ++ db_loaders, opts)
-    IO.inspect Supervisor.which_children(Pipeline.Supervisor)
   end
 end
